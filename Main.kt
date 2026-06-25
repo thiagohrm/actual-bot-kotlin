@@ -1,24 +1,26 @@
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
-import io.ktor.http.*
 import io.ktor.server.response.*
+import io.ktor.http.*
 
-fun main() {
-    embeddedServer(Netty, port = System.getenv("PORT")?.toInt() ?: 8080) {
-        routing {
-            post("/webhook/{token}") {
-                // Valide o token do webhook do Telegram aqui (segurança básica)
-                val body = call.receiveText()
-                
-                // 1. Lógica para extrair dados da mensagem do Telegram
-                // 2. Obter token OIDC do Google (usando as variáveis de ambiente)
-                // 3. Chamar API do seu Actual Budget passando o token no Header
-                
-                call.respond(HttpStatusCode.OK, "Processado")
+fun Application.module() {
+    routing {
+        post("/webhook") {
+            // 1. Validar se a requisição veio do Telegram (verificar token no header ou query)
+            val secretHeader = call.request.headers["X-Telegram-Bot-Api-Secret-Token"]
+            if (secretHeader != System.getenv("TELEGRAM_SECRET_TOKEN")) {
+                call.respond(HttpStatusCode.Unauthorized)
+                return@post
             }
+
+            // 2. Receber o payload do Telegram
+            val body = call.receiveText()
+            
+            // 3. Processar o comando (Ex: /gasto)
+            val success = processTelegramMessage(body)
+            
+            if (success) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.BadRequest)
         }
-    }.start(wait = true)
+    }
 }
