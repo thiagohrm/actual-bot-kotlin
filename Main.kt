@@ -18,7 +18,11 @@ val client = HttpClient(CIO) {
 }
 
 fun main() {
-    embeddedServer(Netty, port = System.getenv("PORT")?.toInt() ?: 8080, module = Application::module).start(wait = true)
+    // Busca a porta fornecida pelo Cloud Run (ou usa 8080 como fallback local)
+    val port = System.getenv("PORT")?.toInt() ?: 8080
+    
+    embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
+        .start(wait = true)
 }
 
 fun Application.module() {
