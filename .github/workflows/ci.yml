@@ -2,14 +2,15 @@ name: CI - Build and Test
 
 on:
   pull_request:
+    types: [opened, synchronize]
+    # Aqui deixamos aberto para qualquer PR que vá para a main
     branches:
-      - 'development/*'
-      - 'feature/*'
-    paths-ignore:
-      - 'docs/**'
+      - main
 
 jobs:
   build-and-test:
+    # O "if" garante que este job só rode se a branch de origem NÃO começar com docs/
+    if: "!startsWith(github.head_ref, 'docs/')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
