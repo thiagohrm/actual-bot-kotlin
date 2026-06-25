@@ -22,4 +22,4 @@ jobs:
           distribution: 'temurin'
 
       - name: Build and Test with Gradle
-        run: gradle shadowJar test
+        run: ./gradlew shadowJar test
