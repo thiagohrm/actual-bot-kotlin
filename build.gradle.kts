@@ -27,9 +27,7 @@ tasks.jar {
         attributes["Main-Class"] = "com.thiagohrm.main.MainKt"
     }
     
-    // Isso copia todas as dependências para dentro do JAR
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     
-    // Isso resolve o conflito de arquivos duplicados no META-INF
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
