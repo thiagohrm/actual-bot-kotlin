@@ -1,7 +1,5 @@
 plugins {
     kotlin("jvm") version "2.0.0"
-    // Removemos o io.ktor.plugin temporariamente para evitar conflito
-    id("com.github.johnrengelman.shadow") version "8.1.1" 
 }
 
 repositories {
@@ -18,12 +16,14 @@ dependencies {
     implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
 }
 
-// Configuração manual do Shadow (mais robusta)
-tasks.shadowJar {
+// Criando o "Fat Jar" manualmente (nativa do Gradle)
+tasks.jar {
     manifest {
         attributes["Main-Class"] = "MainKt"
     }
-    archiveBaseName.set("actual-bot")
-    archiveClassifier.set("all")
-    archiveVersion.set("")
+    
+    // Esta parte "embute" as dependências dentro do jar
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

@@ -21,5 +21,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Build and Test with Gradle
-        run: ./gradlew shadowJar test
+        run: ./gradlew build test
