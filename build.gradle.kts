@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.21"
 }
 
 repositories {
@@ -16,14 +16,20 @@ dependencies {
     implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
 }
 
-// Criando o "Fat Jar" manualmente (nativa do Gradle)
+sourceSets {
+    main {
+        kotlin.setSrcDirs(listOf("src/main/kotlin"))
+    }
+}
+
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "MainKt"
+        attributes["Main-Class"] = "com.thiagohrm.main.MainKt"
     }
     
-    // Esta parte "embute" as dependências dentro do jar
+    // Isso copia todas as dependências para dentro do JAR
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     
+    // Isso resolve o conflito de arquivos duplicados no META-INF
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
