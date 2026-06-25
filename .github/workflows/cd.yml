@@ -53,3 +53,8 @@ jobs:
           image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/actual-repo/actual-bot:latest
           region: 'us-central1'
           credentials: ${{ secrets.GCP_SA_KEY }}
+          flags: '--allow-unauthenticated'
+          env_vars: |-
+            TELEGRAM_SECRET_TOKEN=${{ secrets.TELEGRAM_SECRET_TOKEN }}
+            CF_ACCESS_CLIENT_ID=${{ secrets.CF_ACCESS_CLIENT_ID }}
+            CF_ACCESS_CLIENT_SECRET=${{ secrets.CF_ACCESS_CLIENT_SECRET }}
