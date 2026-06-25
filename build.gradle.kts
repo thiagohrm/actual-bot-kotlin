@@ -1,7 +1,11 @@
 plugins {
     kotlin("jvm") version "2.0.0"
-    id("io.ktor.plugin") version "2.3.11"
-    id("com.github.johnrengelman.shadow") version "8.1.1" // Adicione esta linha
+    // Removemos o io.ktor.plugin temporariamente para evitar conflito
+    id("com.github.johnrengelman.shadow") version "8.1.1" 
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
@@ -14,12 +18,12 @@ dependencies {
     implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
 }
 
-// Garante que o build gere o jar com todas as dependências
+// Configuração manual do Shadow (mais robusta)
 tasks.shadowJar {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
     archiveBaseName.set("actual-bot")
     archiveClassifier.set("all")
     archiveVersion.set("")
-    manifest {
-        attributes["Main-Class"] = "MainKt" // Verifique se o seu arquivo é Main.kt
-    }
 }
