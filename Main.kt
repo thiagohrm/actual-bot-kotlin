@@ -43,7 +43,7 @@ fun Application.module() {
 
 suspend fun sendToActualBudget(payload: String): Boolean {
     return try {
-        val response = client.post("https://seu-actual-budget.com/api/transacao") {
+        val response = client.post("https://actual.thiagohrm.uk/api/transacao") {
             // Headers exigidos pelo Cloudflare Access para Service Tokens
             header("CF-Access-Client-Id", System.getenv("CF_ACCESS_CLIENT_ID"))
             header("CF-Access-Client-Secret", System.getenv("CF_ACCESS_CLIENT_SECRET"))
