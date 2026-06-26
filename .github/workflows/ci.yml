@@ -11,7 +11,7 @@ jobs:
   build-and-test:
     # O "if" garante que este job só rode se a branch de origem NÃO começar com docs/
     if: "!startsWith(github.head_ref, 'docs/')"
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
 
@@ -25,4 +25,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and Test with Gradle
-        run: ./gradlew build test
+        run: ./gradlew build test --info --stacktrace

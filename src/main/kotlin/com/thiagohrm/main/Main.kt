@@ -12,17 +12,14 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.runBlocking
+import io.ktor.client.statement.*
 
-// Configuração do Cliente HTTP que será usado para falar com o Actual
 val client = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
 }
 
 fun main() {
-    // Busca a porta fornecida pelo Cloud Run (ou usa 8080 como fallback local)
     val port = System.getenv("PORT")?.toInt() ?: 8080
-    
     embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
 }
@@ -30,19 +27,28 @@ fun main() {
 fun Application.module() {
     routing {
         post("/webhook") {
-            // 1. Validação de segurança do Telegram
+            // 1. Validação de segurança
             val secretHeader = call.request.headers["X-Telegram-Bot-Api-Secret-Token"]
-            if (secretHeader != System.getenv("TELEGRAM_SECRET_TOKEN")) {
+            val envToken = System.getenv("TELEGRAM_SECRET_TOKEN") ?: ""
+            
+            if (secretHeader?.trim() != envToken.trim()) {
+                println("AVISO: Tentativa de acesso não autorizada. Header: $secretHeader")
                 call.respond(HttpStatusCode.Unauthorized)
                 return@post
             }
 
+            // 2. Recebimento e Log de Diagnóstico
             val body = call.receiveText()
+            println("RECEBIDO TELEGRAM: $body") 
             
-            // 2. Encaminhar para o Actual Budget com credenciais Cloudflare
+            // 3. Encaminhamento
             val success = sendToActualBudget(body)
             
-            if (success) call.respond(HttpStatusCode.OK) else call.respond(HttpStatusCode.InternalServerError)
+            if (success) {
+                call.respond(HttpStatusCode.OK)
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, "Falha ao comunicar com Actual Budget")
+            }
         }
     }
 }
@@ -50,15 +56,19 @@ fun Application.module() {
 suspend fun sendToActualBudget(payload: String): Boolean {
     return try {
         val response = client.post("https://actual.thiagohrm.uk/api/transacao") {
-            // Headers exigidos pelo Cloudflare Access para Service Tokens
             header("CF-Access-Client-Id", System.getenv("CF_ACCESS_CLIENT_ID"))
             header("CF-Access-Client-Secret", System.getenv("CF_ACCESS_CLIENT_SECRET"))
-            
             contentType(ContentType.Application.Json)
             setBody(payload)
         }
+        
+        // Log para ver o que o Actual respondeu
+        val responseBody = response.bodyAsText()
+        println("RESPOSTA ACTUAL: ${response.status} - $responseBody")
+        
         response.status.isSuccess()
     } catch (e: Exception) {
+        println("ERRO CRÍTICO NA CHAMADA HTTP: ${e.stackTraceToString()}")
         false
     }
 }
