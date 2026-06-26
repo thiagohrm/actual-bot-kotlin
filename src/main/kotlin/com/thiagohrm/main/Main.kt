@@ -12,7 +12,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.client.statement.* // Importante para ler o corpo da resposta do Actual
+import io.ktor.client.statement.*
 
 val client = HttpClient(CIO) {
     install(ContentNegotiation) { json() }
